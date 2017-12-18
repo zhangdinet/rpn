@@ -11,7 +11,9 @@ public enum OperatorEnum {
     Devide("/"),
     Sqrt("sqrt"),
     Undo("undo"),
-    Clear("clear");
+    Clear("clear"),
+    Num("num"),
+    Unknown("Unknown");
 
     private String value;
 
