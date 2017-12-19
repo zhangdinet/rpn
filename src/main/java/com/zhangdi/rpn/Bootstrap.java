@@ -33,66 +33,109 @@ public class Bootstrap {
             String contents = scanner.nextLine();
             List<String> contentList = Splitter.on(" ").trimResults().omitEmptyStrings().splitToList(contents);
             Deque<BigDecimal> historyDeque = new ArrayDeque<>();
-            for (String content : contentList) {
-                if (StringUtils.equals(content, "+")) {
-                    lastOperator = OperatorEnum.Add;
-                    secondNum = deque.pollLast();
-                    firstNum = deque.pollLast();
-                    deque.add(firstNum.add(secondNum));
-                    historyDeque.add(firstNum);
-                    historyDeque.add(secondNum);
-                } else if (StringUtils.equals(content, "-")) {
-                    lastOperator = OperatorEnum.Subtract;
-                    secondNum = deque.pollLast();
-                    firstNum = deque.pollLast();
-                    deque.add(firstNum.subtract(secondNum));
-                    historyDeque.add(firstNum);
-                    historyDeque.add(secondNum);
-                } else if (StringUtils.equals(content, "*")) {
-                    lastOperator = OperatorEnum.Multiply;
-                    secondNum = deque.pollLast();
-                    firstNum = deque.pollLast();
-                    deque.add(firstNum.multiply(secondNum));
-                    historyDeque.add(firstNum);
-                    historyDeque.add(secondNum);
-                } else if (StringUtils.equals(content, "/")) {
-                    lastOperator = OperatorEnum.Devide;
-                    secondNum = deque.pollLast();
-                    firstNum = deque.pollLast();
-                    deque.add(firstNum.divide(secondNum));
-                    historyDeque.add(firstNum);
-                    historyDeque.add(secondNum);
-                } else if (StringUtils.equals(content, "sqrt")) {
-                    lastOperator = OperatorEnum.Sqrt;
-                    firstNum = deque.pollLast();
-                    deque.add(new BigDecimal(Math.sqrt(firstNum.doubleValue())));
-                    historyDeque.add(firstNum);
-                } else if (StringUtils.equals(content, "undo")) {
-                    if(!lastOperator.equals(OperatorEnum.Clear)){
-                        deque.pollLast();
-                    }
-                    if(!lastOperator.equals(OperatorEnum.Num) && !lastOperator.equals(OperatorEnum.Undo)){
-                        for (BigDecimal historyNum : historyContainer.pollLast()) {
-                            deque.add(historyNum);
+            int currentPosition = 1;
+            try {
+                for (String content : contentList) {
+                    if(StringUtils.equals(content, " ")){
+                        currentPosition++;
+                        continue;
+                    }else if (StringUtils.equals(content, "+")) {
+                        if (deque.size() < 2) {
+                            System.out.println(String.format("operator %s (position: %s) insucient parameters", content, currentPosition));
+                            break;
+                        }
+                        lastOperator = OperatorEnum.Add;
+                        secondNum = deque.pollLast();
+                        firstNum = deque.pollLast();
+                        deque.add(firstNum.add(secondNum));
+                        historyDeque.add(firstNum);
+                        historyDeque.add(secondNum);
+                        currentPosition = currentPosition + content.length() + 1;
+                    } else if (StringUtils.equals(content, "-")) {
+                        if (deque.size() < 2) {
+                            System.out.println(String.format("operator %s (position: %s) insucient parameters", content, currentPosition));
+                            break;
+                        }
+                        lastOperator = OperatorEnum.Subtract;
+                        secondNum = deque.pollLast();
+                        firstNum = deque.pollLast();
+                        deque.add(firstNum.subtract(secondNum));
+                        historyDeque.add(firstNum);
+                        historyDeque.add(secondNum);
+                        currentPosition = currentPosition + content.length() + 1;
+                    } else if (StringUtils.equals(content, "*")) {
+                        if (deque.size() < 2) {
+                            System.out.println(String.format("operator %s (position: %s) insucient parameters", content, currentPosition));
+                            break;
+                        }
+                        lastOperator = OperatorEnum.Multiply;
+                        secondNum = deque.pollLast();
+                        firstNum = deque.pollLast();
+                        deque.add(firstNum.multiply(secondNum));
+                        historyDeque.add(firstNum);
+                        historyDeque.add(secondNum);
+                        currentPosition = currentPosition + content.length() + 1;
+                    } else if (StringUtils.equals(content, "/")) {
+                        if (deque.size() < 2) {
+                            System.out.println(String.format("operator %s (position: %s) insucient parameters", content, currentPosition));
+                            break;
+                        }
+                        if (deque.pollLast().equals(BigDecimal.ZERO)) {
+                            System.out.println("operator / divide 0 error");
+                            break;
+                        }
+                        lastOperator = OperatorEnum.Devide;
+                        secondNum = deque.pollLast();
+                        firstNum = deque.pollLast();
+                        deque.add(firstNum.divide(secondNum));
+                        historyDeque.add(firstNum);
+                        historyDeque.add(secondNum);
+                        currentPosition = currentPosition + content.length() + 1;
+                    } else if (StringUtils.equals(content, "sqrt")) {
+                        if (deque.size() < 1) {
+                            System.out.println("operator sqrt (positio:) insucient parameters");
+                            break;
+                        } else if (deque.peekLast().doubleValue() < 0) {
+                            System.out.println(String.format("operator %s (position: %s) insucient parameters", content, currentPosition));
+                            break;
+                        }
+                        lastOperator = OperatorEnum.Sqrt;
+                        firstNum = deque.pollLast();
+                        deque.add(BigDecimalMath.sqrt(firstNum));
+                        historyDeque.add(firstNum);
+                        currentPosition = currentPosition + content.length() + 1;
+                    } else if (StringUtils.equals(content, "undo")) {
+                        if (!lastOperator.equals(OperatorEnum.Clear)) {
+                            deque.pollLast();
+                        }
+                        if (!lastOperator.equals(OperatorEnum.Num) && !lastOperator.equals(OperatorEnum.Undo)) {
+                            for (BigDecimal historyNum : historyContainer.pollLast()) {
+                                deque.add(historyNum);
+                            }
+                        }
+                        currentPosition = currentPosition + content.length() + 1;
+                    } else if (StringUtils.equals(content, "clear")) {
+                        for (BigDecimal num : deque) {
+                            historyDeque.add(num);
+                        }
+                        deque.clear();
+                        lastOperator = OperatorEnum.Clear;
+                        currentPosition = currentPosition + content.length() + 1;
+                    } else {
+                        try {
+                            deque.add(new BigDecimal(content));
+                            lastOperator = OperatorEnum.Num;
+                        } catch (Exception e) {
+                            System.out.println("输入内容格式有误, content=" + content);
+                            break;
                         }
                     }
-                } else if (StringUtils.equals(content, "clear")) {
-                    for (BigDecimal num : deque) {
-                        historyDeque.add(num);
-                    }
-                    deque.clear();
-                    lastOperator = OperatorEnum.Clear;
-                } else {
-                    try{
-                        deque.add(new BigDecimal(content));
-                        lastOperator = OperatorEnum.Num;
-                    }catch (Exception e){
-                        System.out.println("输入内容格式有误, content=" + content);
+                    if (!historyDeque.isEmpty()) {
+                        historyContainer.add(historyDeque);
                     }
                 }
-                if (!historyDeque.isEmpty()) {
-                    historyContainer.add(historyDeque);
-                }
+            } catch (Exception e) {
+                System.out.println("系统错误,重新输入");
             }
             printDeque(deque);
         }
@@ -103,10 +146,10 @@ public class Bootstrap {
      *
      * @param deque 存储计算机当前内容的双向队列
      */
-    public static void printDeque(Deque<BigDecimal> deque){
+    public static void printDeque(Deque<BigDecimal> deque) {
         DecimalFormat decimalFormat = new DecimalFormat("#.##########");
         StringBuilder sb = new StringBuilder("stack: ");
-        for(BigDecimal num:deque){
+        for (BigDecimal num : deque) {
             sb.append(decimalFormat.format(num)).append(" ");
         }
         System.out.println(sb.toString());

@@ -13,7 +13,8 @@ public enum OperatorEnum {
     Undo("undo"),
     Clear("clear"),
     Num("num"),
-    Unknown("Unknown");
+    Unknown("Unknown"),
+    WhiteSpace(" ");
 
     private String value;
 
