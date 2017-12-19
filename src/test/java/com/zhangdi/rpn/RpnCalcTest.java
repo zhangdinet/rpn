@@ -25,7 +25,7 @@ public class RpnCalcTest {
     /**
      * 边界测试, 暂时不写
      */
-    @Test
+    //@Test
     public void test(){
 
     }

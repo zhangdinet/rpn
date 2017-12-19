@@ -12,7 +12,7 @@ import com.zhangdi.rpn.enums.OperatorEnum;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 逆波兰计算器
+ * 逆波兰计算器, 支持空格分割的运算符和数字，暂不支持连续多个空格情况
  *
  * 操作次数取决于堆内存大小
  * 非线程安全，每个计算器需要独占一个对象
@@ -30,7 +30,7 @@ public class RpnCalc {
 
     private final String FORMAT_TEMPLATE = "operator %s (position: %s) insucient parameters";
 
-    public RpnCalc(){
+    public RpnCalc() {
         init();
     }
 
@@ -58,10 +58,10 @@ public class RpnCalc {
 
         historyDeque = new ArrayDeque<>();
 
-        //上一次输入类型
+        //上一次输入类型:操作符、数字、空格等, 类型影响出栈和入栈操作
         OperatorEnum lastOperator = OperatorEnum.Unknown;
 
-        List<String> contentList = Splitter.on(" ").trimResults().omitEmptyStrings().splitToList(contents);
+        List<String> contentList = Splitter.on(" ").splitToList(contents);
         try {
             for (String content : contentList) {
                 if (StringUtils.equals(content, " ")) {
@@ -171,6 +171,7 @@ public class RpnCalc {
                 }
             }
         } catch (Exception e) {
+            //暂时只输出控制台, 异常堆栈可以考虑记入日志
             System.out.println("system error, input new line: ");
         }
         return deque;
@@ -185,7 +186,13 @@ public class RpnCalc {
         System.out.println(format(deque));
     }
 
-    public String format(Deque<BigDecimal> deque){
+    /**
+     * 格式换队列, 在输出和单元测试时用到此函数
+     *
+     * @param deque 存储计算机当前内容的双向队列
+     * @return 格式化后的字符串
+     */
+    public String format(Deque<BigDecimal> deque) {
         DecimalFormat decimalFormat = new DecimalFormat("#.##########");
         decimalFormat.setRoundingMode(RoundingMode.FLOOR);
         StringBuilder sb = new StringBuilder("stack: ");
