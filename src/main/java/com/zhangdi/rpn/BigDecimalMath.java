@@ -13,8 +13,8 @@ public class BigDecimalMath {
 
     private static BigDecimal TWO = BigDecimal.ONE.add(BigDecimal.ONE);
 
-    public static BigDecimal sqrt(BigDecimal x){
-        return sqrt(x,MathContext.DECIMAL128);
+    public static BigDecimal sqrt(BigDecimal x) {
+        return sqrt(x, MathContext.DECIMAL128);
     }
 
     public static BigDecimal sqrt(BigDecimal x, MathContext mathContext) {
